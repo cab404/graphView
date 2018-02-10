@@ -38,12 +38,18 @@ public class GraphView extends View {
     public PointF
             min = new PointF(10, 10),
             max = new PointF(200, 200);
+    /**
+     * pinch rect
+     */
+    public RectF tPinch = new RectF();
+    /**
+     * previous pinch rect
+     */
+    public RectF tHPinch = new RectF();
     public RectF
-            pinch = new RectF(),
-            hpinch = new RectF(),
             bounds = new RectF(0, 0, 200, 200),
             viewport = new RectF(0, 0, 100, 100),
-            tmp_rect = new RectF();
+            targetViewport = new RectF();
 
     public void addGraph(GraphData data) {
         graphs.add(data);
@@ -52,11 +58,6 @@ public class GraphView extends View {
     public void removeGraph(GraphData data) {
         graphs.remove(data);
     }
-
-    float[] sx = new float[20], sy = new float[20];
-
-    int pointerCount = 0;
-
 
     /**
      * minimum distance between two same-axes finger points to trigger scaling
@@ -76,8 +77,6 @@ public class GraphView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         if (e.getAction() == MotionEvent.ACTION_UP) {
-            System.out.println("up");
-            pointerCount = 0;
         }
         if (e.getAction() == MotionEvent.ACTION_MOVE && e.getHistorySize() > 0) {
             int ww = getWidth() - getPaddingLeft() - getPaddingRight();
@@ -89,14 +88,6 @@ public class GraphView extends View {
             float hx1 = e.getHistoricalX(0, 0) - getPaddingLeft();
             float y1 = e.getY(0) - getPaddingTop();
             float hy1 = e.getHistoricalY(0, 0) - getPaddingTop();
-
-            if (e.getPointerCount() > pointerCount) {
-                for (int i = pointerCount; i < e.getPointerCount(); i++) {
-                    sx[i] = e.getX(i);
-                    sy[i] = e.getY(i);
-                }
-                pointerCount = e.getPointerCount();
-            }
 
             if (e.getPointerCount() == 1) {
 
@@ -115,55 +106,53 @@ public class GraphView extends View {
                 float y2 = e.getY(1) - getPaddingTop();
                 float hy2 = e.getHistoricalY(1, 0) - getPaddingTop();
 
-                pinch.set(
+                tPinch.set(
                         x1 / ww * viewport.width(),
                         y1 / wh * viewport.height(),
                         x2 / ww * viewport.width(),
                         y2 / wh * viewport.height()
                 );
-                pinch.sort();
+                tPinch.sort();
 
-                hpinch.set(
+                tHPinch.set(
                         hx1 / ww * viewport.width(),
                         hy1 / wh * viewport.height(),
                         hx2 / ww * viewport.width(),
                         hy2 / wh * viewport.height()
                 );
-                hpinch.sort();
+                tHPinch.sort();
 
 
-                float dsx = hpinch.width() / pinch.width();
-                float dsy = hpinch.height() / pinch.height();
+                float dsx = tHPinch.width() / tPinch.width();
+                float dsy = tHPinch.height() / tPinch.height();
 
                 if (Math.abs(x1 - hx1) < minTrigger) dsx = 1f;
                 if (Math.abs(y1 - hy1) < minTrigger) dsy = 1f;
 
 /*
-                ***
-                ***
-                ***
-                ***
+                ||||
+                ||||
+                ||||
+                ||||
 
-        HUGE PRISM ASCII ART
 
-                * * *
-                *  *  *
-                *   *   *
-                *    *    *
-                *     *     *
-                *      *      *
-                *       *       *
-                *        *        *
-                *         *         *
-                *          *          */
-                viewport.top = hpinch.top + (viewport.top - pinch.top) * dsy;
-                viewport.left = hpinch.left + (viewport.left - pinch.left) * dsx;
-                viewport.right = hpinch.right + (viewport.right - pinch.right) * dsx;
-                viewport.bottom = hpinch.bottom + (viewport.bottom - pinch.bottom) * dsy;
-               /*               *               *
-                *                *                *
-                *                 *                 *
-                *                  *                  */
+                HUGE PRISM ASCII ART
+
+
+                *  =   +     -   *
+                *   =    +      -    *
+                *    =     +       -     *
+                *     =      +        -      *
+                *      =       +         -       *
+                *       =        +          -        *
+                *        =         +           -         *
+                *         =          +            -          *
+                *          =           +             -           *
+                *           =            +              -            */
+                viewport.top = tHPinch.top + (viewport.top - tPinch.top) * dsy;
+                viewport.left = tHPinch.left + (viewport.left - tPinch.left) * dsx;
+                viewport.right = tHPinch.right + (viewport.right - tPinch.right) * dsx;
+                viewport.bottom = tHPinch.bottom + (viewport.bottom - tPinch.bottom) * dsy;
 
                 invalidate();
 
@@ -273,16 +262,16 @@ public class GraphView extends View {
     private Point2D t1 = new Point2D(), t2 = new Point2D();
 
     <DP extends DataPoint2D> void render(GraphData<DP> data, Canvas on) {
-        tmp_rect.set(viewport);
+        targetViewport.set(viewport);
 
-        t1.set(tmp_rect.left, tmp_rect.bottom);
-        t2.set(tmp_rect.right, tmp_rect.top);
+        t1.set(targetViewport.left, targetViewport.bottom);
+        t2.set(targetViewport.right, targetViewport.top);
 
         List<DP> points = data.dataset.lookupPoints(t1, t2, 1);
         for (int i = 0; i < data.renderers.size(); i++)
             data.renderers
                     .get(i)
-                    .render(on, tmp_rect, points);
+                    .render(on, targetViewport, points);
 
     }
 
