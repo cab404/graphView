@@ -1,6 +1,9 @@
 package com.cab404.graphview.impl;
 
-import com.cab404.graphview.DataPoint2D;
+import android.graphics.PointF;
+import android.graphics.RectF;
+
+import com.cab404.graphview.DataPoint;
 import com.cab404.graphview.Graph2D;
 import com.cab404.graphview.Point2D;
 
@@ -10,14 +13,14 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Created by cab404 on 05.02.18.
+ * simple graph thing, does a reasonable job of getting points
  */
 
-public class SimpleGraph2D<A extends DataPoint2D> implements Graph2D<A> {
+public class SimpleGraph2D<A extends DataPoint> implements Graph2D<A> {
 
     public List<A> points = new ArrayList<>();
 
-    private Point2D tmp = new Point2D();
+    private PointF tmp = new PointF();
 
     public void sortPoints() {
         Collections.sort(points, new Comparator<A>() {
@@ -32,7 +35,7 @@ public class SimpleGraph2D<A extends DataPoint2D> implements Graph2D<A> {
         });
     }
 
-    private Point2D world(int index) {
+    private PointF world(int index) {
         points.get(index).toWorld(tmp);
         return tmp;
     }
@@ -56,16 +59,19 @@ public class SimpleGraph2D<A extends DataPoint2D> implements Graph2D<A> {
     }
 
     @Override
-    public List<A> lookupPoints(Point2D from, Point2D to, int extra) {
-        int start = binarySearchApprox(from.x, 0, points.size() - 1, true) - extra;
-        int end = binarySearchApprox(to.x, 0, points.size() - 1, false) + extra;
-        if (end > points.size() - 1) end = points.size() - 1;
-        if (start < 0) start = 0;
+    public List<A> lookupPoints(RectF viewport, int extra) {
+        int limit = points.size() - 1;
+        int start = binarySearchApprox(viewport.left, 0, limit, true);
+        int end = binarySearchApprox(viewport.right, 0, limit, false);
         if (start > end) {
             int swap = end;
             end = start;
             start = swap;
         }
+        start -= extra;
+        end += extra;
+        if (end > limit) end = limit;
+        if (start < 0) start = 0;
         return points.subList(start, end + 1);
     }
 }

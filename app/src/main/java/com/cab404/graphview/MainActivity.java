@@ -21,24 +21,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         GraphView view = new GraphView(this);
         setContentView(view);
-        GraphData data = new GraphData();
+        GraphData<Point2D> data = new GraphData<>();
         data.dataset = new SimpleGraph2D<Point2D>() {
             {
-                for (int i = 0; i < 100; i += 5) {
-                    points.add(new Point2D((float) i, (float) i));
+                for (int i = 0; i <= 100; i += 5) {
+                    points.add(new Point2D((float) i, (float) Math.random() * 100));
                 }
-                System.out.println(points);
             }
         };
         view.setPadding(30, 30, 30, 30);
-        BezierGraphRenderer renderer = new BezierGraphRenderer();
+
+        BezierGraphRenderer<Point2D> renderer = new BezierGraphRenderer<>();
         renderer.strokePaint.setColor(Color.BLACK);
         renderer.strokePaint.setStrokeWidth(5);
         renderer.strokePaint.setStyle(Paint.Style.STROKE);
+
         data.renderers.add(renderer);
 
         view.viewport.set(0, 0, 100, 100);
-        view.min.set(30, 50);
+        view.min.set(30, 100);
         view.max.set(100, 100);
         view.bounds.set(0, 0, 100, 100);
         view.addGraph(data);

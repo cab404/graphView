@@ -1,16 +1,18 @@
 package com.cab404.graphview;
 
+import android.graphics.RectF;
+
 import java.util.List;
 
-public interface Graph2D<DP extends DataPoint2D> {
+public interface Graph2D<DP extends DataPoint> {
 
     /**
-     * @param from Lower bounds of points.
-     * @param to
-     * @param extra
+     *
+     * @param viewport
+     * @param extra number of extra out of bounds points
      *
      * @return all the points in given range.
      * if any parameter is null, that means it extends to corresponding infinity.
      */
-    List<DP> lookupPoints(Point2D from, Point2D to, int extra);
+    List<DP> lookupPoints(RectF viewport, int extra);
 }

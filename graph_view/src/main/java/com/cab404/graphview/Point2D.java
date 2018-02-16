@@ -1,17 +1,32 @@
 package com.cab404.graphview;
 
-public class Point2D extends DataPoint2D<Float, Float> {
-    @Override
-    public void toWorld(Point2D to) {
-        to.set(x, y);
-    }
+import android.graphics.PointF;
 
-    public Point2D(Float x, Float y) {
-        super(x, y);
+public class Point2D implements DataPoint {
+    public float x;
+    public float y;
+
+    public void set(float x, float y) {
+        this.x = x;
+        this.y = y;
     }
 
     public Point2D() {
-        super(0f, 0f);
     }
 
+    public Point2D(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    @Override
+    public String toString() {
+        return x + ":" + y;
+    }
+
+    @Override
+    public void toWorld(PointF to) {
+        to.x = x;
+        to.y = y;
+    }
 }
