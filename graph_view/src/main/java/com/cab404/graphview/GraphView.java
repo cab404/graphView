@@ -268,14 +268,10 @@ public class GraphView extends View {
 
         if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
             touched = false;
-            System.out.println("up");
-            System.out.println(kinetic);
             invalidate();
         }
 
-        checkBroken();
-        tryShiftingViewport();
-        forceBounds();
+        viewportCheck();
         return true;
     }
 
@@ -305,12 +301,12 @@ public class GraphView extends View {
         }
         if (viewport.left < bounds.left) {
             viewport.left = bounds.left;
-            if (viewport.width() < min.y)
+            if (viewport.width() < min.x)
                 viewport.right = bounds.left + min.x;
         }
         if (viewport.right > bounds.right) {
             viewport.right = bounds.right;
-            if (viewport.width() < min.y)
+            if (viewport.width() < min.x)
                 viewport.left = bounds.right - min.x;
         }
         if (viewport.bottom > bounds.bottom) {
@@ -445,19 +441,22 @@ public class GraphView extends View {
         return false;
     }
 
+    private void viewportCheck() {
+        checkBroken();
+        tryShiftingViewport();
+        forceBounds();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
         if (!touched && applySpeed()) invalidate();
+        viewportCheck();
 
-        checkBroken();
-        tryShiftingViewport();
-        forceBounds();
         if (!bounds.contains(viewport)) {
             System.out.println("viewport is still OOB, check your bound functions!!! " + viewport);
         }
-        System.out.println(viewport);
 
         graphTarget.eraseColor(0);
         for (int i = 0; i < graphs.size(); i++)
