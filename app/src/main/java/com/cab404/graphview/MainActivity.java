@@ -5,10 +5,10 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
 import com.cab404.graphview.impl.BezierGraphRenderer;
-import com.cab404.graphview.impl.SimpleGraph2D;
+import com.cab404.graphview.impl.PointsGraphRenderer;
+import com.cab404.graphview.impl.SimpleGraph;
 
 /**
  * Created by cab404 on 04.02.18.
@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
         GraphView view = new GraphView(this);
         setContentView(view);
         GraphData<Point2D> data = new GraphData<>();
-        data.dataset = new SimpleGraph2D<Point2D>() {
+        data.dataset = new SimpleGraph<Point2D>() {
             {
                 for (int i = 0; i <= 100; i += 5) {
                     points.add(new Point2D((float) i, (float) Math.random() * 100));
@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
         renderer.strokePaint.setStyle(Paint.Style.STROKE);
 
         data.renderers.add(renderer);
+        data.renderers.add(new PointsGraphRenderer<Point2D>());
+
 
         view.viewport.set(0, 0, 100, 100);
         view.min.set(30, 100);

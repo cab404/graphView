@@ -4,7 +4,7 @@ import android.graphics.RectF;
 
 import java.util.List;
 
-public interface Graph2D<DP extends DataPoint> {
+public interface Graph<DP extends DataPoint> {
 
     /**
      *

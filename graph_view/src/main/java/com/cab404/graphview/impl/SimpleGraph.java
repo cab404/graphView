@@ -4,8 +4,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 
 import com.cab404.graphview.DataPoint;
-import com.cab404.graphview.Graph2D;
-import com.cab404.graphview.Point2D;
+import com.cab404.graphview.Graph;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +15,7 @@ import java.util.List;
  * simple graph thing, does a reasonable job of getting points
  */
 
-public class SimpleGraph2D<A extends DataPoint> implements Graph2D<A> {
+public class SimpleGraph<A extends DataPoint> implements Graph<A> {
 
     public List<A> points = new ArrayList<>();
 

@@ -10,6 +10,6 @@ import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 public class GraphData<DP extends DataPoint> {
-    public Graph2D<DP> dataset;
+    public Graph<DP> dataset;
     public List<GraphRenderer<DP>> renderers = new ArrayList<>();
 }

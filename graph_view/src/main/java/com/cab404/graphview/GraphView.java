@@ -110,6 +110,10 @@ public class GraphView extends View {
      */
     private float kineticFalloff = .95f;
 
+    /**
+     * a cool looking, but pretty useless feature for smoother (but sometimes buggy-looking) experience with zooming
+     */
+    private boolean kineticOnMultitouch = false;
 
     /**
      * adds a graph to render list
@@ -132,7 +136,7 @@ public class GraphView extends View {
      * probably not really worth tuning for library end user, so whatever
      * if you see something strange while
      */
-    float minTrigger;
+    private float minTrigger;
 
     {
         minTrigger = getResources().getDisplayMetrics().density * 20;
@@ -153,6 +157,7 @@ public class GraphView extends View {
         use.y = (use.y - viewport.top) / viewport.height() * wh;
         return use;
     }
+
 
     private void startRecordingScroll() {
         kinetic.set(viewport);
@@ -236,6 +241,8 @@ public class GraphView extends View {
                 if (Math.abs(x1 - hx1) < minTrigger) dsx = 1f;
                 if (Math.abs(y1 - hy1) < minTrigger) dsy = 1f;
 
+                if (!kineticOnMultitouch) endRecordingScroll();
+
 /*
                 ||||
                 ||||
@@ -258,7 +265,10 @@ public class GraphView extends View {
                 viewport.right = tHPinch.right + (viewport.right - tPinch.right) * dsx;
                 viewport.bottom = tHPinch.bottom + (viewport.bottom - tPinch.bottom) * dsy;
 
+                if (!kineticOnMultitouch) startRecordingScroll();
+
                 invalidate();
+
 
             }
 
@@ -415,12 +425,14 @@ public class GraphView extends View {
 
     }
 
+    /**
+     * applies kinetic scrolling and updates it's speed values
+     */
     private boolean applySpeed() {
         viewport.top -= kinetic.top;
         viewport.left -= kinetic.left;
         viewport.right -= kinetic.right;
         viewport.bottom -= kinetic.bottom;
-
 
         kinetic.top *= kineticFalloff;
         kinetic.left *= kineticFalloff;
@@ -431,7 +443,6 @@ public class GraphView extends View {
         if (Math.abs(kinetic.left) < .01f) kinetic.left = 0;
         if (Math.abs(kinetic.right) < .01f) kinetic.right = 0;
         if (Math.abs(kinetic.bottom) < .01f) kinetic.bottom = 0;
-
 
         if (kinetic.top != 0) return true;
         if (kinetic.left != 0) return true;
