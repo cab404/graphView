@@ -149,12 +149,14 @@ public class GraphView extends View {
     }
 
     /**
-     * transforms world coordinates (that are returned by {@link DataPoint#toWorld(PointF) toWorld}) to graph canvas coordinates.
-     * <br/>useful in graph renderers
+     * transforms world coordinates (that are usually returned by {@link DataPoint#toWorld(PointF) toWorld}) to graph canvas coordinates, which are used in {@link GraphRenderer#render(GraphView, Canvas, RectF, List)}
+     * <br />coordinates are inverse on y axis relative to android canvas — because people usually assume that higher values are actually, uhm, higher.
+     * <br /> ZA WARUDO! MAPPIA COORDINATIE!
      */
     public PointF worldToCanvas(PointF use) {
         use.x = (use.x - viewport.left) / viewport.width() * ww;
-        use.y = (use.y - viewport.top) / viewport.height() * wh;
+        use.y = (1f - (use.y - viewport.top) / viewport.height()) * wh;
+//        use.y = (use.y - viewport.bottom) / viewport.height() * wh;
         return use;
     }
 
@@ -168,6 +170,10 @@ public class GraphView extends View {
         kinetic.left -= viewport.left;
         kinetic.right -= viewport.right;
         kinetic.bottom -= viewport.bottom;
+        kinetic.top *= 2.3f;
+        kinetic.left *= 2.3f;
+        kinetic.right *= 2.3f;
+        kinetic.bottom *= 2.3f;
     }
 
     @Override

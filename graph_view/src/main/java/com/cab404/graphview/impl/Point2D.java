@@ -1,8 +1,10 @@
-package com.cab404.graphview;
+package com.cab404.graphview.impl;
 
 import android.graphics.PointF;
 
-public class Point2D implements DataPoint {
+import com.cab404.graphview.DataPoint;
+
+public class Point2D implements DataPoint, GridGraphRenderer.LabeledDataPoint {
     public float x;
     public float y;
 
@@ -28,5 +30,10 @@ public class Point2D implements DataPoint {
     public void toWorld(PointF to) {
         to.x = x;
         to.y = y;
+    }
+
+    @Override
+    public String getLabel() {
+        return toString();
     }
 }

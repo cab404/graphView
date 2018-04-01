@@ -70,7 +70,6 @@ public class BezierGraphRenderer<A extends DataPoint> implements GraphRenderer<A
 
         }
 
-        path.transform(view.inverseMatrix);
         canvas.drawPath(path, strokePaint);
 
     }
