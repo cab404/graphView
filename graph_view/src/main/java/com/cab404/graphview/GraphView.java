@@ -7,9 +7,13 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.v4.view.NestedScrollingChild;
+import android.support.v4.view.NestedScrollingChildHelper;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,7 +21,7 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GraphView extends View {
+public class GraphView extends View implements NestedScrollingChild {
 
     public GraphView(Context context) {
         super(context);
@@ -174,12 +178,15 @@ public class GraphView extends View {
         kinetic.left *= 2.3f;
         kinetic.right *= 2.3f;
         kinetic.bottom *= 2.3f;
+
+        int axes = 0;
+        if (kinetic.left != 0 || kinetic.right != 0) axes |= ViewCompat.SCROLL_AXIS_HORIZONTAL;
+        if (kinetic.bottom != 0 || kinetic.top != 0) axes |= ViewCompat.SCROLL_AXIS_VERTICAL;
+        startNestedScroll(axes);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        System.out.println(e.getAction());
-
         if (e.getAction() == MotionEvent.ACTION_MOVE && e.getHistorySize() > 0) {
 
             touched = true;
@@ -285,6 +292,7 @@ public class GraphView extends View {
         if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
             touched = false;
             invalidate();
+            stopNestedScroll();
         }
 
         viewportCheck();
@@ -377,7 +385,12 @@ public class GraphView extends View {
 
     }
 
+    boolean nullSize = false;
+
     private void onResize(int w, int h) {
+        nullSize = w * h == 0;
+        if (nullSize) return;
+
         ww = w - getPaddingLeft() - getPaddingRight();
         wh = h - getPaddingTop() - getPaddingBottom();
 
@@ -406,19 +419,19 @@ public class GraphView extends View {
         onResize(w, h);
     }
 
-    @Nullable
     @Override
     protected Parcelable onSaveInstanceState() {
-        super.onSaveInstanceState();
+        Parcelable baseState = super.onSaveInstanceState();
         Bundle bundle = new Bundle();
+        bundle.putParcelable("base", baseState);
         bundle.putParcelable("viewport", viewport);
         return bundle;
     }
 
     @Override
     protected void onRestoreInstanceState(Parcelable p) {
-        super.onRestoreInstanceState(p);
         Bundle state = (Bundle) p;
+        super.onRestoreInstanceState(state.getParcelable("base"));
         viewport = state.getParcelable("viewport");
     }
 
@@ -467,6 +480,7 @@ public class GraphView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if (nullSize) return;
 
         if (!touched && applySpeed()) invalidate();
         viewportCheck();
@@ -482,5 +496,20 @@ public class GraphView extends View {
         canvas.drawBitmap(graphTarget, getPaddingLeft(), getPaddingTop(), graphPaint);
 
     }
+
+    /* nested scrolling thing */
+    // @formatter:off
+    private final NestedScrollingChildHelper nestedHelper = new NestedScrollingChildHelper(this);
+    { setNestedScrollingEnabled(true);}
+    @Override public void setNestedScrollingEnabled(boolean enabled) { nestedHelper.setNestedScrollingEnabled(enabled); }
+    @Override public boolean isNestedScrollingEnabled() { return nestedHelper.isNestedScrollingEnabled(); }
+    @Override public boolean startNestedScroll(int axes) { return  nestedHelper.startNestedScroll(axes); }
+    @Override public void stopNestedScroll() { nestedHelper.stopNestedScroll(); }
+    @Override public boolean hasNestedScrollingParent() { return nestedHelper.hasNestedScrollingParent(); }
+    @Override public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow) { return nestedHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow); }
+    @Override public boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow) { return nestedHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow); }
+    @Override public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) { return nestedHelper.dispatchNestedFling(velocityX, velocityY, consumed); }
+    @Override public boolean dispatchNestedPreFling(float velocityX, float velocityY) { return nestedHelper.dispatchNestedPreFling(velocityX, velocityY); }
+    // @formatter:on
 
 }

@@ -2,6 +2,7 @@ package com.cab404.graphview.impl;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.util.Log;
 
 import com.cab404.graphview.DataPoint;
 import com.cab404.graphview.Graph;
@@ -47,7 +48,7 @@ public class SimpleGraph<A extends DataPoint> implements Graph<A> {
         if (e - s == 1 && world(s).x < x && world(e).x > x)
             return low ? s : e;
         if (e - s == 0) {
-            System.out.println("should not happen!");
+            Log.w("Something weird", "should not happen!");
             return e;
         }
         int center = (e - s) / 2 + s;
